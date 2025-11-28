@@ -12,9 +12,11 @@ Embora o Welsh-Powell não garanta a coloração ótima (o menor número de core
 
 📝 Conceitos Chave
 1. Heurística
+
 No contexto da computação, a heurística refere-se a uma abordagem ou método de resolução de problemas que utiliza regras práticas ou "atalhos" para encontrar soluções viáveis e suficientemente boas em um tempo razoável, em vez de garantir a solução ótima ou perfeita.
 
 2. Algoritmo Guloso (Greedy Algorithm)
+
 Um algoritmo guloso é uma estratégia de resolução de problemas que, a cada passo, faz a escolha que parece ser a melhor localmente, sem considerar as consequências futuras.
 
 Essa abordagem toma uma decisão momentânea e não retrocede (não volta atrás nas decisões).
