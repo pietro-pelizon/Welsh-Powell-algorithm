@@ -1,6 +1,8 @@
-🏴󠁧󠁢󠁷󠁬󠁳󠁿 Algoritmo de Welsh-Powell para Coloração de Grafos
-💡 Implementação Simples do Algoritmo
-O algoritmo de Welsh-Powell é uma heurística¹ gulosa² simples e eficiente para a coloração de grafos.
+Algoritmo de Welsh-Powell para Coloração de Grafos
+
+**Implementação Simples do Algoritmo**
+
+O algoritmo de Welsh-Powell é uma heurística**¹** gulosa**²** simples e eficiente para a coloração de grafos.
 
 Ele consiste, basicamente, nos seguintes passos:
 
@@ -10,7 +12,8 @@ Partindo desse conjunto de vértices ordenado, colorir um a um, utilizando a pri
 
 Embora o Welsh-Powell não garanta a coloração ótima (o menor número de cores) em todos os casos, ele tende a produzir bons resultados em um tempo razoável.
 
-📝 Conceitos Chave
+**Conceitos Chave**
+
 1. Heurística
 
 No contexto da computação, a heurística refere-se a uma abordagem ou método de resolução de problemas que utiliza regras práticas ou "atalhos" para encontrar soluções viáveis e suficientemente boas em um tempo razoável, em vez de garantir a solução ótima ou perfeita.
