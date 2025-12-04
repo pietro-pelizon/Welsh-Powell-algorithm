@@ -2,30 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
-// Representa um nó na lista encadeada de vizinhos
+// Representa um nó na lista encadeada de adjacência
 typedef struct st_no_adj {
-
-    // Índice do vizinho no vetor principal
-    int info_node;
-
-    // Ponteiro para o próximo vizinho da lista de adjacência
+    int info_adjacente;
     struct st_no_adj *prox;
 } no_adj;
 
 // Representa o vértice em si
 typedef struct st_vertice {
-
-    // Cor atribuída ao vértice
     char cor;
-
-    // Número de conexões que o vértice faz
     int grau;
-
-    // Ponteiro para o início da lista de adjacência
     no_adj *inicio;
-
 } vertice;
 
 // Estrutura principal do grafo
@@ -33,6 +21,39 @@ typedef struct st_grafo {
     int num_vertices;
     vertice *vertices;
 } grafo;
+
+void insertion_sort(void *base, size_t num_elementos, size_t tamanho_elemento, int (*cmp_data)(const void *a, const void *b)) {
+    if (num_elementos <= 1) {
+        return;
+    }
+
+    char *arr = (char*)base;
+    char *temp_key = malloc(tamanho_elemento);
+    if (temp_key == NULL) {
+        return;
+    }
+    for (size_t i = 1; i < num_elementos; i++) {
+
+        char *ptr_i= arr + i * tamanho_elemento;
+        memcpy(temp_key, ptr_i, tamanho_elemento);
+        char *ptr_j = ptr_i - tamanho_elemento;
+
+        int j = (int)i - 1;
+
+        while (j >= 0 && cmp_data(ptr_j, temp_key) > 0) {
+
+            memmove(ptr_j + tamanho_elemento, ptr_j, tamanho_elemento);
+
+            j--;
+            ptr_j -= tamanho_elemento;
+        }
+
+        char *ptr_insertion = arr + (j + 1) * tamanho_elemento;
+        memcpy(ptr_insertion, temp_key, tamanho_elemento);
+    }
+
+    free(temp_key);
+}
 
 grafo *init_grafo(int n) {
     if (n <= 0) return NULL;
@@ -58,36 +79,31 @@ grafo *init_grafo(int n) {
     return g;
 }
 
-void add_aresta(grafo *g, const int u, const int v) {
-
-    no_adj *adj1 = malloc (sizeof(no_adj));
-    if (adj1 == NULL) return;
-
-    adj1 -> info_node = v;
-    adj1 -> prox = g -> vertices[u].inicio;
-    g -> vertices[u].inicio = adj1;
-    g -> vertices[u].grau++;
-
-    no_adj *adj2 = malloc (sizeof(no_adj));
-    if (adj2 == NULL) return;
-
-    adj2 -> info_node = u;
-    adj2 -> prox = g -> vertices[v].inicio;
-    g -> vertices[v].inicio = adj2;
-    g -> vertices[v].grau++;
-
+void insere_no_inicio(vertice *v, int info_novo_adjacente) {
+    no_adj *novo = malloc(sizeof(no_adj));
+    if (novo) {
+        novo -> info_adjacente = info_novo_adjacente;
+        novo -> prox = v -> inicio;
+        v -> inicio = novo;
+        v -> grau++;
+    }
 }
 
-bool pode_pintar(const grafo *g, const int u, const char cor_desejada) {
+void add_aresta(const grafo *g, int u, int v) {
+    insere_no_inicio(&g -> vertices[u], v);
+    insere_no_inicio(&g -> vertices[v], u);
+}
+
+bool pode_pintar(const grafo *g, const int u, const char cor_atual) {
     if (g == NULL) return false;
 
     no_adj *atual = g -> vertices[u].inicio;
 
     while (atual != NULL) {
-        int id_do_vizinho = atual -> info_node;
-        char cor_vizinho = g -> vertices[id_do_vizinho].cor;
+        int info_atual_adjacente = atual -> info_adjacente;
+        char cor_adjacente = g -> vertices[info_atual_adjacente].cor;
 
-        if (cor_vizinho != 0 && cor_vizinho == cor_desejada) {
+        if (cor_adjacente != 0 && cor_adjacente == cor_atual) {
             return false;
         }
 
@@ -97,13 +113,13 @@ bool pode_pintar(const grafo *g, const int u, const char cor_desejada) {
     return true;
 }
 
-int get_num_vertices(grafo *g) {
+int get_num_vertices(const grafo *g) {
     return g -> num_vertices;
 }
 
 // Dados para a ordenação de vértices por ordem decrescente de grau
 typedef struct {
-    int id_original;
+    int id_atual;
     int grau;
 } elemento_ordenacao;
 
@@ -114,29 +130,42 @@ int comparar_graus(const void *a, const void *b) {
     return e2 -> grau - e1 -> grau;
 }
 
+
+/*
+    'A' -> Vermelho
+    'B' -> Verde
+    'C' -> Azul
+    'D' -> Rosa
+    'E' -> Azul Serenity
+    'F' -> Vinho
+    '0' -> Cinza (sem cor)
+*/
+
 // Lista global de cores disponíveis
 char lista_cores[] = {'A', 'B', 'C', 'D', 'E', 'F'};
 
 // Algoritmo Welsh & Powell para coloração de grafos (heurística)
-int Welsh_Powell(grafo *g) {
+int Welsh_Powell(const grafo *g) {
+    if (g == NULL || g -> vertices == NULL) return -1;
 
     int n = get_num_vertices(g);
-    elemento_ordenacao *lista = malloc(n * sizeof(elemento_ordenacao));
+    elemento_ordenacao *lista_ordenacao = malloc(n * sizeof(elemento_ordenacao));
+
     for (int i = 0; i < n; i++) {
-        lista[i].id_original = i;
-        lista[i].grau = g -> vertices[i].grau;
+        lista_ordenacao[i].id_atual = i;
+        lista_ordenacao[i].grau = g -> vertices[i].grau;
     }
 
-    qsort(lista, n, sizeof(elemento_ordenacao), comparar_graus);
+    insertion_sort(lista_ordenacao, n, sizeof(elemento_ordenacao), comparar_graus);
 
-    int cor_index = 0;
+    int cor_atual_index = 0;
     int vertices_coloridos = 0;
 
     while (vertices_coloridos < n) {
-        char cor_atual = lista_cores[cor_index];
+        char cor_atual = lista_cores[cor_atual_index];
 
         for (int i = 0; i < n; i++) {
-            int u = lista[i].id_original;
+            int u = lista_ordenacao[i].id_atual;
 
             if (g -> vertices[u].cor != 0) continue;
 
@@ -145,34 +174,28 @@ int Welsh_Powell(grafo *g) {
                 vertices_coloridos++;
             }
         }
-        cor_index++;
+
+        cor_atual_index++;
     }
 
-    free(lista);
+    free(lista_ordenacao);
 
-    return cor_index;
+    return cor_atual_index;
 }
 
+void print_resultado(const grafo *g) {
+    if (g == NULL) return;
 
-void imprimir_resultado(grafo *g) {
-    printf("Resultado da coloração:\n");
+
+    printf("\nResultado da coloração:\n");
     for (int i = 0; i < g -> num_vertices; i++) {
         printf("Vertice %d (Grau %d) -> Cor: %c\n",
-               i, g -> vertices[i].grau, g -> vertices[i].cor);
+            i, g -> vertices[i].grau, g -> vertices[i].cor);
     }
-}
-
-double tempo_usado(double fim, double inicio) {
-    return ((double) (fim - inicio)) / CLOCKS_PER_SEC;
-}
-
-void print_info_coloracao(grafo *g, int numero_cromatico) {
-    printf("Número cromático do grafo com %i vértices: %i\n", g -> num_vertices, numero_cromatico);
 }
 
 void liberar_grafo(grafo *g) {
     if (g == NULL) return;
-
 
     for (int i = 0; i < g -> num_vertices; i++) {
 
@@ -189,55 +212,61 @@ void liberar_grafo(grafo *g) {
     free(g);
 }
 
-int main() {
-    clock_t inicio_welsh_powell, fim_welsh_powell;
-    clock_t inicio_programa, fim_programa;
-    double tempo_usado_cpu_programa;
-    double tempo_usado_cpu_welsh_powell;
+void gerar_imagem_grafo(grafo *g) {
+    if (g == NULL) return;
 
-
-    inicio_programa = clock();
-
-    int n = 100000;
-
-    grafo *g = init_grafo(n);
-
-    int n_v = g -> num_vertices;
-
-    printf("Gerando grafo com %d vertices...\n", n);
-
-    for (int i = 0; i < n; i++) {
-        add_aresta(g, i, (i + 1) % n_v);
-        add_aresta(g, i, (i + 2) % n_v);
-        add_aresta(g, i, (i + 3) % n_v);
+    FILE *txt = fopen("dados_grafo.txt", "w");
+    if (txt == NULL) {
+        printf("Erro ao criar arquivo de dados para o Python.\n");
+        return;
     }
 
+    for (int i = 0; i < g -> num_vertices; i++) {
+        char c = (g -> vertices[i].cor == 0) ? '0' : g->vertices[i].cor;
+        fprintf(txt, "%d %c\n", i, c);
+    }
 
-    inicio_welsh_powell = clock();
-    int numero_cromatico = Welsh_Powell(g);
-    fim_welsh_powell = clock();
+    fprintf(txt, "ARESTAS\n");
+    for (int i = 0; i < g -> num_vertices; i++) {
+        no_adj *atual = g -> vertices[i].inicio;
+        while (atual != NULL) {
+            fprintf(txt, "%d %d\n", i, atual -> info_adjacente);
+            atual = atual->prox;
+        }
+    }
 
-    tempo_usado_cpu_welsh_powell = tempo_usado((double) fim_welsh_powell, (double) inicio_welsh_powell);
+    fclose(txt);
 
-    printf("Tempo de execução do algoritmo Welsh & Powell: %lf\n", tempo_usado_cpu_welsh_powell);
+    printf("\n[C] Dados exportados. Chamando script Python...\n");
 
-    // imprimir_resultado(g);
-    print_info_coloracao(g, numero_cromatico);
-
-    liberar_grafo(g);
-
-    fim_programa = clock();
-
-    tempo_usado_cpu_programa = ((double) (fim_programa - inicio_programa)) / CLOCKS_PER_SEC;
-
-    printf("tempo de execução do programa todo: %lf\n", tempo_usado_cpu_programa);
-    return 0;
+    system("python plot_grafo.py");
 }
 
+int main() {
+    int numero_de_vertices = 10;
+    grafo *g = init_grafo(numero_de_vertices);
+
+    printf("Gerando grafo com %d vertices...\n", numero_de_vertices);
+
+    add_aresta(g, 0, 1);
+    add_aresta(g, 0, 2);
+    add_aresta(g, 0, 3);
+    add_aresta(g, 0, 4);
+    add_aresta(g, 4, 5);
+    add_aresta(g, 5, 6);
+    add_aresta(g, 6, 7);
+    add_aresta(g, 6, 8);
+    add_aresta(g, 8, 9);
+    add_aresta(g, 4, 7);
 
 
+    printf("Executando algoritmo de coloração...\n");
+    int numero_cromatico = Welsh_Powell(g);
+    print_resultado(g);
+    printf("\nNúmero cromático do grafo com %i vértices: %i\n", numero_de_vertices, numero_cromatico);
 
+    gerar_imagem_grafo(g);
 
-
-
-
+    liberar_grafo(g);
+    return 0;
+}
