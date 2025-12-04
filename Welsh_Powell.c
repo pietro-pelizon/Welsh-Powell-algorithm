@@ -172,7 +172,7 @@ void print_resultado(const grafo *g) {
 void gerar_imagem_grafo(grafo *g);
 
 int main() {
-    int numero_de_vertices = 12;
+    int numero_de_vertices = 11;
     grafo *g = init_grafo(numero_de_vertices);
 
     printf("Gerando grafo com %d vertices...\n", numero_de_vertices);
@@ -188,6 +188,40 @@ int main() {
     add_aresta(g, 8, 9);
     add_aresta(g, 4, 7);
 
+    /*
+    add_aresta(g, 0, 1);
+    add_aresta(g, 1, 2);
+    add_aresta(g, 2, 3);
+    add_aresta(g, 3, 4);
+    add_aresta(g, 4, 0); // Fecha o pentágono
+
+    add_aresta(g, 5, 7);
+    add_aresta(g, 7, 9);
+    add_aresta(g, 9, 6);
+    add_aresta(g, 6, 8);
+    add_aresta(g, 8, 5); // O ciclo interno (pentágono) 5-7-9-6-8
+
+    // 3. As Arestas de Ligação entre os dois pentágonos
+    add_aresta(g, 0, 5);
+    add_aresta(g, 1, 6);
+    add_aresta(g, 2, 7);
+    add_aresta(g, 3, 8);
+    add_aresta(g, 4, 9);
+
+    // 4. O Vértice Dominante (10)
+    // Ele se conecta a TODOS os vértices do pentágono externo (0-4) e interno (5-9)
+    add_aresta(g, 10, 0);
+    add_aresta(g, 10, 1);
+    add_aresta(g, 10, 2);
+    add_aresta(g, 10, 3);
+    add_aresta(g, 10, 4);
+    add_aresta(g, 10, 5);
+    add_aresta(g, 10, 6);
+    add_aresta(g, 10, 7);
+    add_aresta(g, 10, 8);
+    add_aresta(g, 10, 9);
+    */
+
 
     printf("Executando algoritmo de coloração...\n");
     int numero_cromatico = Welsh_Powell(g);
@@ -199,7 +233,6 @@ int main() {
     liberar_grafo(g);
     return 0;
 }
-
 
 
 void gerar_imagem_grafo(grafo *g) {
